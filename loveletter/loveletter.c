@@ -9,10 +9,10 @@ char *epilog = " very much!";
 unsigned short int idx;
 
 typedef struct _COMMAND{
-        unsigned int namelen;
-        unsigned int epilen;
-        unsigned int prolen; //SIZE : 0(X)1(O)ff(O). however must write [SIZE] at upper lin
         char name[MAXSIZE];
+        unsigned int prolen; //SIZE : 0(X)1(O)ff(O). however must write [SIZE] at upper lin
+        unsigned int epilen;
+        unsigned int namelen;
 }COMMAND;
 
 // ♡ ♥ --> 3byte
@@ -38,14 +38,6 @@ void protect(char *name){
 
 
 int main(int argc, char *argv[]){
-        /*
-        typedef struct _COMMAND{
-                unsigned int namelen;
-                unsigned int epilen;
-                unsigned int prolen; //SIZE : 0(X)1(O)ff(O). however must write [SIZE] at upper lin
-                char name[MAXSIZE];
-        }COMMAND;
-        */
         char loveletter[1024];
         memset(loveletter,0,1024);
         COMMAND command;

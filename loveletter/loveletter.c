@@ -38,8 +38,10 @@ void protect(char *name){
 
 
 int main(int argc, char *argv[]){
+        char loveletter_guard[1024]; // prevent from modifing loveletter...from downtown...
         char loveletter[1024];
         memset(loveletter,0,1024);
+        memset(loveletter_guard,0,1024);
         COMMAND command;
         command.epilen = strlen(epilog);
         command.prolen = strlen(prolog);

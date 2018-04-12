@@ -27,11 +27,7 @@ typedef struct _COMMAND{
 void protect(char *name){
         char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,";
         char buffer[MAXSIZE];
-        int i,j,index;
-        index = 0;
-
-        printf("[DBG] name is %s(%d)\n",name,strlen(name));
-
+        int i,j;
         for(i=0;i<strlen(name);i++){
                 for(j=0;j<strlen(dangerous);j++){
                         if(name[i] == dangerous[j]){
@@ -41,33 +37,31 @@ void protect(char *name){
                         }
                 }
         }
-        printf("[DBG] name is %s(%d)\n",name, strlen(name));
 }
 
-
-char loveletter[1024];
+char loveletter[MAXSIZE];
 int main(int argc, char *argv[]){
         COMMAND command;
-        memset(loveletter,0,1024);
+        memset(loveletter,0,MAXSIZE);
         command.epilen = strlen(epilog);
         command.prolen = strlen(prolog);
 
-        printf("[*] My lover's name is : ");
+        printf("♥ My lover's name is : ");
         fgets(command.name, MAXSIZE, stdin); 
         if(command.name[strlen(command.name)-1] == '\x0a'){
             command.name[strlen(command.name)-1] = '\x0';
         }
 
-        printf("[*] Whatever happens, I'll protect her...\n");
+        printf("♥ Whatever happens, I'll protect her...\n");
         protect(command.name);
         command.namelen = strlen(command.name);
 
-        printf("[*] Impress her upon my memory...\n");
+        printf("♥ Impress her upon my memory...\n");
         memcpy(&loveletter[idx], prolog, command.prolen); idx += command.prolen;
         memcpy(&loveletter[idx], command.name, command.namelen); idx += command.namelen; // memcpy too much byte? 
         // To get reach to RET, attacker can try overwriting prolen bytes...but, this leads stack smashing!
         memcpy(&loveletter[idx], epilog, command.epilen); idx += command.epilen;
        
-        printf("[*] Her name echos in my mind...\n"); 
+        printf("♥ Her name echos in my mind...\n"); 
         system(loveletter);
 }

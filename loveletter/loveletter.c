@@ -7,6 +7,10 @@
 // payload 2. using ed
 // $ (perl -e 'print "d ", "a"x251, ";", "\x01"'; cat) | ./loveletter
 //   !sh
+// 
+// payload 3. [patched] unintended solution 
+// $ (perl -e 'print"sh -c sh ", "A"x244, ";"';cat) | ./loveletter
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,11 +29,11 @@ typedef struct _COMMAND{
 
 // Bug : ♡ ♥ --> 3byte
 void protect(char *name){
-        char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,";
+        char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,.";
         char buffer[MAXSIZE];
         int i,j;
-        for(i=0;i<strlen(name);i++){
-                for(j=0;j<strlen(dangerous);j++){
+        for(i=0;i<strlen(name)-1;i++){
+                for(j=0;j<strlen(dangerous)-1;j++){
                         if(name[i] == dangerous[j]){
                                 strcpy(buffer, &name[i+1]); // next strings..
                                 strcpy(&name[i], "♥");      // memcpy requires size... hide size by using strcpy...

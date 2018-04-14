@@ -12,39 +12,24 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdint.h>
 #define  BUFF_SIZE   1024
+#define  MAXSIZE 128
+#define _CRT_SECURE_NO_WARNINGS 
 
-#define _CRT_SECURE_NO_WARNINGS    // strtok 보안 경고로 인한 컴파일 에러 방지
+
+
 
 //TODO
 char *escapeshell(char* str); 
 
-// developer : eternalklaus
-// contributer : MincheolSon, Dauren
-int isClientAlive(char *ClientIP, int ClientPort){
-    int sockfd;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-	char   buff_snd[BUFF_SIZE+5];
- 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        error("ERROR opening socket");
-    }
-	memset( &serv_addr, 0, sizeof( serv_addr));
-	serv_addr.sin_family      = AF_INET;
-    serv_addr.sin_port        = htons(ClientPort);
-    serv_addr.sin_addr.s_addr = inet_addr(ClientIP);
-	
-	int isalive=connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
-	
-	strncpy(buff_snd, "alive?", strlen("alive?"));
-	write(sockfd, buff_snd, strlen(buff_snd)+1);  
-    close(sockfd);
-	printf("%s:%d is still alive...\n", ClientIP,ClientPort);
-	if (isalive < 0) return 0;
-    return 1;
-}
+typedef struct _CMDBLOCK{
+        char input[MAXSIZE];
+        int8_t prolen; //SIZE : 00(X) 01(O)...ff(O).
+        int8_t epilen;
+        int8_t inputlen; 
+}CMDBLOCK;
+
 
 // @userlist
 char *Userlist(){ // User should download result as OnionUser.db.tmp
@@ -57,24 +42,38 @@ char *Userlist(){ // User should download result as OnionUser.db.tmp
 }
 
 // @adduser
-int addUser(char *IpPortGithubId) { // char userIp, int userPort, char *githubID
-	char cmd[256];
-	char *IpPortGithubId_s = escapeshell(IpPortGithubId);
-	printf("[*] IpPortGithubId   : %s\n\n",IpPortGithubId);
-	printf("[*] IpPortGithubId_s : %s\n\n",IpPortGithubId_s);
+int addUser(char *IpPortGithubId) { 
+	CMDBLOCK c; 
+	char *prolog = "sed -i '1i"; 
+	char *epilog = " ' OnionUser.db";
+	unsigned int idx = 0;
+	char cmd[1024] = {0,};
+	memset(c.input, 0, MAXSIZE);
+	strncpy(c.input, IpPortGithubId, MAXSIZE-1); // safely copied to c.input
 	
-	snprintf(cmd, 256, "sed -i '1i%s ' %s", IpPortGithubId_s ,"OnionUser.db");
-	printf("[*] cmd : %s\n\n",cmd);
-	system(cmd);free(IpPortGithubId_s);
+	c.prolen = strlen(prolog);      // 2. modified to len(sh -c blabla..)!
+	c.epilen = strlen(epilog);      // 2. modified to 0!
+	c.inputlen = strlen(c.input);   //    safe... 근데 ff가 됨 --> strncpy에서 ffffffffffffffff으로 인식해버림;;; 그래서 MAXSIZE는 128로 줬음. 128못넘도록...
+
+	printf("[DBG - BEFORE] c.epilen  : %1x(%d), c.prolen : %1x(%d), c.inputlen : %1x(%d)\n",c.epilen,c.epilen,c.prolen,c.prolen,c.inputlen,c.inputlen);
+	escapeshell(c.input);           // 1. bof!
+	printf("[DBG - AFTER] c.epilen  : %1x(%d), c.prolen : %1x(%d), c.inputlen : %1x(%d)\n",c.epilen,c.epilen,c.prolen,c.prolen,c.inputlen,c.inputlen);
+	printf("[DBG - AFTER] c.input : %s\n",c.input);
+	
+	strncpy(&cmd[idx], prolog, c.prolen);    idx += c.prolen; 
+	strncpy(&cmd[idx], c.input, c.inputlen); idx += c.inputlen;
+	strncpy(&cmd[idx], epilog, c.epilen);    idx += c.epilen;
+	
+	printf("cmd is... %s\n", cmd);
+	system(cmd);
 	
 	return 1; 
 }
 
 // @deleteuser
 int deleteUser(char *githubID){
-	char cmd[256];
-	char *githubID_s = escapeshell(githubID);
-	snprintf(cmd, 256, "sed -i '/ %s/d' %s", githubID_s ,"OnionUser.db"); system(cmd);
+	char cmd[MAXSIZE];
+	// snprintf(cmd, 256, "sed -i '/ %s/d' %s", githubID ,"OnionUser.db"); system(cmd);
 	
 	return 1;
 }
@@ -160,12 +159,11 @@ int run_dbserver(int dbserver_port){
 	  write(client_socket, buff_snd, strlen(buff_snd)+1);  
       close(client_socket);
    }
-   // [TODO] 다른 프로세스에서는 OnionUser.db 한줄씩 돌면서
-   // isClientAlive 실행하기. 
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	run_dbserver(4000); // 4000번포트사용
+	addUser(argv[1]);
+	//run_dbserver(4000); // 4000번포트사용
 }
 

@@ -1,13 +1,13 @@
-# 요약
-Command injection filter를 우회하여 임의 커멘드 실행을 가능케 하는 익스플로잇입니다. 
-모순적이게도 이는 Command injection filter 에서의 버퍼 관리 취약점 때문에 발생합니다.
+# Summery
+Command injection filter를 우회하여 임의 커멘드 실행을 가능케 하는 익스플로잇입니다.  
+모순적이게도 이는 Command injection filter 내부의 버퍼 관리 취약점 때문에 발생합니다.  
 
 # Security impact
 | 취약점 | 설명 |
 |----------|------------------|
-| 1. Control-flow hijack | DBSERVER에서의 임의 커멘드 실행이 가능합니다. |
-| 2. Privacy breach | OnionMessenger에 접속한 모든 사용자의 IP, ID, public key 정보 유출이 가능합니다. |
-| 3. DoS | 공격자는 Whole Onion network 를 disable할 수 있습니다. |
+| Control-flow hijack | DBSERVER에서의 임의 커멘드 실행이 가능합니다. |
+| Privacy breach | OnionMessenger에 접속한 모든 사용자의 IP, ID, public key 정보 유출이 가능합니다. |
+| DoS | 공격자는 Whole Onion network 를 disable할 수 있습니다. |
 
 # Vulnerability difficulty
 | 취약점 | 설명 |

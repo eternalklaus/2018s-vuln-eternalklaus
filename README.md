@@ -1,114 +1,60 @@
-# 2018s-onion-team1
-
-# Team member
-- Jiwon Choi(Team leader)
-- Seongho Han
-- Mincheol son
-- Dauren serkeshev
-
-# Requirement 
-- Two servers are required for Onion Messenger to work.
-
-1. DB server: A server that provides a list of people who are currently connected to the network.
-
-2. Public Key Server: A server that distributes users' public keys. Use Github's IndividualKeys page to get public key information.
-
-
-# Onion Router
-![Onion](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Onion_diagram.svg/1200px-Onion_diagram.svg.png)  
-[reference] https://en.wikipedia.org/wiki/Onion_routing
-  
-Onion is a data structure formed by "packing" a message into a continuous encryption layer.
-
-The original message is encrypted with multiple layers and sent to the next node from the sender's node.
-
-Encrypted data is decrypted each time through the node.
-
-The contents of the original message can be known only when reaching the recipient's node.
-
-No node in the circuit knows whether the previous node is the source of data or another intermediary node.
-
-
-
-# Our Protocol 
-
-All data is transmitted in file format. The detail of Protocol is described as below.
-
-- In the case of File
-
-| line No. | Description      |
+# Security impact
+Grading Criteria에 포함된 3가지 항목을 포함하도록 설계했습니다.
+| 취약점 | 설명 |
 |----------|------------------|
-|  line 1  | "final" |
-|  line 2  | "File"  |
-|  line 3  |  [Sender name]  |
-|  line 4  |   [File name]   |
-|  line 5  | [Message Block] |
+| 1. Control-flow hijack | DBSERVER에서의 임의 커멘드 실행이 가능합니다. |
+| 2. Privacy breach | OnionMessenger에 접속한 모든 사용자의 IP, ID, public key 정보 유출이 가능합니다. |
+| 3. DoS | DBSERVER 에서의 임의커멘드 실행이 가능하므로 Onion network로의 접속을 disable시킬 수 있습니다. |
 
-
-- In the case of Text
-
-| line No. | Description      |
+# Vulnerability difficulty
+Grading Criteria에 포함된 3가지 항목을 포함하도록 설계했습니다.
+| 취약점 | 설명 |
 |----------|------------------|
-|  line 1  | "final" |
-|  line 2  | "File"  |
-|  line 3  |  [Sender name]  |
-|  line 4  |      NULL       |
-|  line 5  | [Message Block] |
+|  1. Logic error | escapingshell()함수에서 버퍼 관리를 잘못하여, 특정 조건 아래에서 buffer overflow가 유발됩니다 |
+|  2. Memory error | 1번의 로직에러를 이용하면 일부 데이터들을 조작할 수 있습니다. 예를들어 프로그램 내부 시스템 커멘드의 길이정보를 조작할 수 있습니다. |
+|  3. Injection and others | 2번을 이용하여 시스템 커멘드의 길이정보를 조작한 후에는 command injection이 가능합니다. |
+
+
+# Assumption
+|RELRO | STACK CANARY | NX | PIE | RPATH | RUNPATH | FILE
+|Partial RELRO  | Canary found | NX enabled | No PIE | No RPATH | No RUNPATH | dbserver
 
 
 
-# Description of onion messenger
-1. The user who enters the network registers [his IP, his Port, his GibhubID] in the DB server and notifies the connection to the DB server.
- 
-2. The user obtains a list of [IP, Port, GibhubID] of the users currently connected to the network from the DB server.
 
-3. The user downloads the GibhubID.pub key from the Github server based on the user list obtained from the DB server and imports it.
-
-4. Determine the Relay Point at random from user list.
-   ex) When A sends a message to B, relay is randomly determined in the form A-D-E-C-B.
-
-5. Encrypt file.txt appropriately for the route node.
-
-	ex) When the route is A-D-E-C-B, the encryption proceeds sequentially 4 times according to the order of the nodes. 
-	
-	file1.txt = B's IP + B's Port + enc(file.txt,  B's public key)  
-	
-	file2.txt = C's IP + C's Port + enc(file1.txt, C's public key)  
-	
-	file3.txt = E's IP + E's Port + enc(file2.txt, E's public key)  
-    
-	file4.txt = D's IP + D's Port + enc(file3.txt, D's public key)  
-	   
-6. After encryption is completed, file4.txt is transferred as shown below and decrypted in order.
-
-	A: Transfer file4.txt to Introduction Points (D).
-
-	D: Decrypt file4.txt with D's private key to obtain file3.txt.
-
-       Send file3.txt to E
-
-    E: Decrypt file3.txt with E's private key to obtain file2.txt.
-    
-	   Send file2.txt to C
-    
-	C: Decrypt file2.txt with C's private key to get file1.txt.
-    
-	   Send file1.txt to B.
-   
-	B: Decrypt file1.txt with B's private key to get file.txt.
+RELRO STACK CANARY NX PIE RPATH RUNPATH FILE Partial RELRO Canary found NX enabled No PIE No RPATH No RUNPATH dbserver
+| Security features | Command injection filter가 적용된 프로그램으로써, default로는 command injection 이 불가능하므로 공격을 위해서는 이를 우회하여야 합니다. |
 
 
-In the course of a series of transmissions, the anonymity of the sender and recipient is ensured and the encrypted file can be transmitted securely.
+개발자는 command injection공격을 방어하기 위해서 아래와 같은 escapeshell를 추가했습니다. 
+이 함수는 사용자 입력값에 포함된 위험한 문자들을 escaping 합니다. 
 
-[https://gitpitch.com/KAIST-IS521/2018s-presentation-team1/onion](https://gitpitch.com/KAIST-IS521/2018s-presentation-team1/onion) (For details)
 
-                  
-# Work Distribution
+void escapeshell(char *str){ // [BUG] str can expend to strlen(str)*2 !
+        char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,";
+        char buffer[MAXSIZE];
+        int i,j;
+		printf("[DBSERVER] securely escaping client's input...\n");
+		printf("           %s\n",str);
+        for(i=0;i<strlen(str);i++){
+                for(j=0;j<strlen(dangerous);j++){
+                        if(str[i] == dangerous[j]){
+                                strcpy(buffer, &str[i]);  
+                                strcpy(&str[i++], "\\"); 
+                                strcpy(str+strlen(str), buffer); 
+								// printf("[middle] str(%d) : %s\n",strlen(str),str);
+                        }
+                }
+        }
+		printf("       --> %s\n",str);
+}
+[security.c]
 
-| Name             | Role                     |
-|------------------|--------------------------|
-| Jiwon Choi       | DB Server & DB Client & manage whole project  |
-| Seongho Han      | PGP encryption & protorol & make presentation |
-| Mincheol son     | Manage PGP key & protorol & make demo video, onion slides |
-| Dauren serkeshev | protocol, Create docker   & make onion slides |
+escapeshell이 실행되면 위험한 캐릭터 앞에 escaping 문자인 "\"가 추가되어 str의 전체 길이가 늘어납니다. 
+하지만 개발자는 이 사실을 간과하였고, 결과적으로 str이 최대 길이(MAXSIZE 127)를 넘어 오버플로우될 수 있습니다. 
 
+
+        char input[MAXSIZE];
+        int8_t prolen; //SIZE : 00(X) 01(O)...ff(O).
+        int8_t epilen;
+        int8_t inputlen; 

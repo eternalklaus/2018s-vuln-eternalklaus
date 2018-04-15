@@ -1,11 +1,10 @@
 
 # Vulnerability
-</br>
-</br>
-
 ### Summery
 - `Command injection filter` 를 우회하여 임의 커멘드 실행을 가능케 하는 익스플로잇입니다.  
 - 모순적이게도 이는 `Command injection filter` 내부의 버퍼 관리 취약점 때문에 발생합니다.  
+</br>
+</br>
 
 ### Detail
 1. Command injection filter인 escapeshell()의 버퍼 오버플로우 취약점이 발생
@@ -25,9 +24,13 @@
     * 전달 페이로드 중 `;`도 escape 문자에 해당
     * 3번 결과 임의커멘드가 실행 가능한 상황까지 온다고 하더라도 공격자는 리버스쉘을 딸 수가 없음
 * 해결 
-    * OnionUser.db 파일에 커멘드를 추가
-    * OnionUser.db 파일을 쉘 스크립트로써 실행
-    * 그 결과 여러 줄에 걸친 커멘드가 실행 가능하여 리버스쉘 획득 가능
+    * `dbserver` 는 기본적으로 사용자가 전달하는 Ip, Port, GithubID를 `OnionUser.db` 에 추가는 역할을 함
+    * 그런데 `OnionUser.db` 파일은 777 권한으로 관리되어 실행 가능한 파일이라는 특징을 가짐
+    * 이걸 아는 공격자는 `dbserver`에 Ip, Port, GithubID 대신에 `스크립트 코드`를 여러 차례 전달
+    * 임의 커멘드 실행 단계에서 공격자는 `./ OnionUser.db` 를 실행
+    * 여러 줄에 걸친 스크립트 코드가 실행되며 리모트쉘 획득
+</br>
+</br>
 
 ### Vulnerable code
 ```
@@ -52,14 +55,13 @@ int addUser(char *IpPortGithubId) {
 	
 	printf("[DBSERVER] executing command...\n");
 	printf("           \"%s\"\n", cmd);
-	system(cmd);                                                 // 4. 공격자가 삽입한 커멘드가 실행됩니다. 
+	system(cmd);                                                 // 4. 공격자가 삽입한 임의커멘드 실행
 	
 	return 1; 
 }
 ```
-
-
-
+</br>
+</br>
 
 # Exploit 
 ### Assumption
@@ -70,44 +72,48 @@ int addUser(char *IpPortGithubId) {
 |RELRO | STACK CANARY | NX | PIE | RPATH | RUNPATH | FILE
 |------|--------------|----|-----|-------|---------|-----
 |Partial RELRO  | Canary found | NX enabled | No PIE | No RPATH | No RUNPATH | dbserver
- 
- 
+</br>
+</br>
+
 ### Security impact
 | 취약점 | 설명 |
 |----------|------------------|
 | Control-flow hijack | 공격 결과 DBSERVER에서의 임의 커멘드 실행이 가능합니다. |
 | Privacy breach | 공격 결과 OnionMessenger에 접속한 모든 사용자의 ID, IP, Port 정보 유출이 가능합니다. |
 | DoS | 공격 결과 공격자는 Whole Onion network 를 disable할 수 있습니다. |
-  
-  
-  
+</br>
+</br>
+
 ### Exploit difficulty
 | 취약점 | 설명 |
 |----------|------------------|
 | Logic error | escapingshell()함수에서의 버그로 인해 특정 조건 아래에서 buffer overflow가 유발됩니다 |
 | Memory error | Logic error 트리거 후에는 일부 데이터들을 조작할 수 있습니다. 공격자는 프로그램 내부 시스템 커멘드의 길이정보를 조작합니다. |
 | Injection and others | 시스템 커멘드 길이정보를 조작한 후에는 command injection이 가능합니다. |
-  
-  
-  
+</br>
+</br>
+
 ## Exploit code
 - 익스플로잇은 3-stage로 실행됩니다.  
 - https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/master/exploit/gogo.py  
-  
-  
-  
+</br>
+</br>
+
 # Exploit 
-[VICTIM]
+### VICTIM
 1. Directory `src`
 2. Compile dbserver by `gcc -o dbserver dbserver.c security.c`
 3. Run dbserver `./dbserver`
-  
-[ATTACKER]
+</br>
+</br>
+
+### ATTACKER
 1. Directory `exploit`
 2. Run docker image by `sudo ./run.sh` command.
 3. Inside docker image, run exploit code `./gogo.py`.
 4. Then get a remote shell.
-  
+</br>
+</br>
 
 # Exploit result
 ![onion](exploit.png)

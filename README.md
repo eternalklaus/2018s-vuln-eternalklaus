@@ -7,11 +7,11 @@
 </br>
 
 ### Detail
-**1. Command injection filter인 escapeshell()의 버퍼 오버플로우 취약점이 발생**
+1. Command injection filter인 escapeshell()의 버퍼 오버플로우 취약점이 발생  
 </br>
-**2. `1`의 결과 커멘드 길이를 저장하는 변수 `prolen`, `epilen`가 를 조작할 수 있게 됨**
+2. `1`의 결과 커멘드 길이를 저장하는 변수 `prolen`, `epilen`가 를 조작할 수 있게 됨  
 </br>
-**3. `2`의 결과 공격자는 `prolen`을 0보다 큰 값으로, `epilen`을 0으로 조작**
+3. `2`의 결과 공격자는 `prolen`을 0보다 큰 값으로, `epilen`을 0으로 조작  
 </br>
 * 제약조건 
     * 모든 스트링은 strncpy로 전달되므로 페이로드에 0(NULL BYTE)를 사용할 수 없음
@@ -23,7 +23,7 @@
     * `"sed -i '1i"` 중 1바이트인 `"s"` 만 복사됨
     * `"s -c ..."`을 전달하면 `"sh -c ..."` 가 완성되어 임의커멘드 실행이 가능
 </br>
-**4. 커멘드가 escape되는 문제**
+4. 커멘드가 escape되는 문제  
 </br>
 * 제약조건 : 공격자가 주는 모든 커멘드는 escapeshell을 거쳐서 전달됨
     * 전달 페이로드 중 `;`도 escape 문자에 해당

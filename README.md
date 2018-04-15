@@ -8,11 +8,9 @@
 
 ### Detail
 1. Command injection filter인 escapeshell()의 버퍼 오버플로우 취약점이 발생  
-</br>
 2. `1`의 결과 커멘드 길이를 저장하는 변수 `prolen`, `epilen`가 를 조작할 수 있게 됨  
-</br>
 3. `2`의 결과 공격자는 `prolen`을 0보다 큰 값으로, `epilen`을 0으로 조작  
-</br>
+```
 * 제약조건 
     * 모든 스트링은 strncpy로 전달되므로 페이로드에 0(NULL BYTE)를 사용할 수 없음
     * 따라서 공격자는 `prolen`은 1 이상의 값으로만 조작가능
@@ -22,9 +20,9 @@
     * `prolen` 을 1로 조작
     * `"sed -i '1i"` 중 1바이트인 `"s"` 만 복사됨
     * `"s -c ..."`을 전달하면 `"sh -c ..."` 가 완성되어 임의커멘드 실행이 가능
-</br>
+```
 4. 커멘드가 escape되는 문제  
-</br>
+```
 * 제약조건 : 공격자가 주는 모든 커멘드는 escapeshell을 거쳐서 전달됨
     * 전달 페이로드 중 `;`도 escape 문자에 해당
     * 3번 결과 임의커멘드가 실행 가능한 상황까지 온다고 하더라도 공격자는 리버스쉘을 딸 수가 없음
@@ -34,11 +32,12 @@
     * 이걸 아는 공격자는 `dbserver`에 Ip, Port, GithubID 대신에 `스크립트 코드`를 여러 차례 전달
     * 임의 커멘드 실행 단계에서 공격자는 `./ OnionUser.db` 를 실행
     * 그 결과 여러 줄에 걸친 스크립트 코드가 실행되며 리모트쉘 획득
+```
 </br>
 </br>
 
 ### Vulnerable code
-```
+```{.cpp}
 void escapeshell(char *str){ // [BUG] str에서 dangerous char이 escaping되면서 최대 2배의 길이까지 증가
                              //       str의 MAXSIZE인 127바이트 이상으로 오버플로우 가능
         char dangerous[] = "#&;`'\"|*?~<>^()[]{}$\\,";
@@ -62,7 +61,7 @@ void escapeshell(char *str){ // [BUG] str에서 dangerous char이 escaping되면
 </br>
 </br>
 
-```
+```{.cpp}
 int addUser(char *IpPortGithubId) { 
 	CMDBLOCK c; 
 	char *prolog = "sed -i '1i"; 

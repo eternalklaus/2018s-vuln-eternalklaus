@@ -14,13 +14,12 @@
 #include <fcntl.h>
 #include <stdint.h>
 #define  BUFF_SIZE   1024
-#define  MAXSIZE 128
+#define  PARAM_SIZE  512
+#define  MAXSIZE 127
+
 #define _CRT_SECURE_NO_WARNINGS 
 
 
-
-
-//TODO
 char *escapeshell(char* str); 
 
 typedef struct _CMDBLOCK{
@@ -48,23 +47,22 @@ int addUser(char *IpPortGithubId) {
 	char *epilog = " ' OnionUser.db";
 	unsigned int idx = 0;
 	char cmd[1024] = {0,};
+	
 	memset(c.input, 0, MAXSIZE);
-	strncpy(c.input, IpPortGithubId, MAXSIZE-1); // safely copied to c.input
+	strncpy(c.input, IpPortGithubId, MAXSIZE); // safely copied to c.input
 	
 	c.prolen = strlen(prolog);      // 2. modified to len(sh -c blabla..)!
 	c.epilen = strlen(epilog);      // 2. modified to 0!
-	c.inputlen = strlen(c.input);   //    safe... 근데 ff가 됨 --> strncpy에서 ffffffffffffffff으로 인식해버림;;; 그래서 MAXSIZE는 128로 줬음. 128못넘도록...
-
-	printf("[DBG - BEFORE] c.epilen  : %1x(%d), c.prolen : %1x(%d), c.inputlen : %1x(%d)\n",c.epilen,c.epilen,c.prolen,c.prolen,c.inputlen,c.inputlen);
+	c.inputlen = strlen(c.input);   //    safe... 
+	                                //    참고) 0xff 인 경우 strncpy의 파라미터패싱과정에서 ffffffffffffffff이 됨. 따라서 MAXSIZE < 128이 되야함. 
 	escapeshell(c.input);           // 1. bof!
-	printf("[DBG - AFTER] c.epilen  : %1x(%d), c.prolen : %1x(%d), c.inputlen : %1x(%d)\n",c.epilen,c.epilen,c.prolen,c.prolen,c.inputlen,c.inputlen);
-	printf("[DBG - AFTER] c.input : %s\n",c.input);
 	
 	strncpy(&cmd[idx], prolog, c.prolen);    idx += c.prolen; 
 	strncpy(&cmd[idx], c.input, c.inputlen); idx += c.inputlen;
 	strncpy(&cmd[idx], epilog, c.epilen);    idx += c.epilen;
 	
-	printf("cmd is... %s\n", cmd);
+	printf("[DBSERVER] executing command...\n");
+	printf("           \"%s\"\n", cmd);
 	system(cmd);
 	
 	return 1; 
@@ -72,10 +70,31 @@ int addUser(char *IpPortGithubId) {
 
 // @deleteuser
 int deleteUser(char *githubID){
-	char cmd[MAXSIZE];
-	// snprintf(cmd, 256, "sed -i '/ %s/d' %s", githubID ,"OnionUser.db"); system(cmd);
+	CMDBLOCK c; 
+	char *prolog = "sed -i '/ ";
+	char *epilog = "/d' OnionUser.db";
+	unsigned int idx = 0;
+	char cmd[1024] = {0,};
 	
-	return 1;
+	memset(c.input, 0, MAXSIZE);
+	strncpy(c.input, githubID, MAXSIZE); // safely copied to c.input
+	
+	c.prolen = strlen(prolog);      // 2. modified to len(sh -c blabla..)!
+	c.epilen = strlen(epilog);      // 2. modified to 0!
+	c.inputlen = strlen(c.input);   
+	
+	escapeshell(c.input);           // 1. bof!
+	
+	strncpy(&cmd[idx], prolog, c.prolen);    idx += c.prolen; 
+	strncpy(&cmd[idx], c.input, c.inputlen); idx += c.inputlen;
+	strncpy(&cmd[idx], epilog, c.epilen);    idx += c.epilen;
+	
+	printf("[DBSERVER] executing command...\n");
+	printf("           \"%s\"\n", cmd);
+	system(cmd);
+	
+	return 1; 
+
 }
 
 int run_dbserver(int dbserver_port){
@@ -114,19 +133,25 @@ int run_dbserver(int dbserver_port){
    }
 
    char* ipstr = malloc(100);
-   char* param = malloc(512);
+   char* param = malloc(PARAM_SIZE);
    
-   memset(ipstr, 0, 100);
-   memset(param, 0, 512);
+   
+   
    while(1)
    {
+	  memset(ipstr, 0, 100);
+	  memset(param, 0, PARAM_SIZE);
+	  
+	  memset(buff_rcv, 0, BUFF_SIZE+5);
+	  memset(buff_snd, 0, BUFF_SIZE+5);
+   
       client_addr_size  = sizeof( client_addr);
       client_socket     = accept( server_socket, (struct sockaddr*)&client_addr, &client_addr_size);
 
 	  struct sockaddr_in *s = (struct sockaddr_in *)&client_addr;
       memset(ipstr, 0, 100);
       inet_ntop(AF_INET, &s->sin_addr, ipstr, 100);
-      printf("Peer IP address: %s\n", ipstr);
+      printf("[DBSERVER] Peer IP address: %s\n", ipstr);
 
 	  
 	  
@@ -138,23 +163,23 @@ int run_dbserver(int dbserver_port){
 
       read(client_socket, buff_rcv, BUFF_SIZE);
       
-	  // server command : @adduser, @deleteuser, @userlist
 	  if (!strncmp(buff_rcv,"@adduser",strlen("@adduser"))){ 
-		strcpy(param, ipstr);
-        strcat(param, " ");
-        // bug fixed - one byte overflow
-        strncat(param, buff_rcv+strlen("@adduser")+1, 512-strlen(ipstr)-2);
-		addUser(param);                 
-		printf("[DBSERVER] User login : %s\n\n",buff_rcv+strlen("@adduser")+1); 
+		  strcpy(param, ipstr);
+		  strncat(param, buff_rcv+strlen("@adduser"), PARAM_SIZE-strlen(ipstr)-1); 
+		  param[strlen(param)-1] = 0; // eat newline
+		  addUser(param);                 
+		  printf("[DBSERVER] User login : %s\n\n",buff_rcv+strlen("@adduser")+1); 
 	  }
 	  
 	  if (!strncmp(buff_rcv,"@deleteuser",strlen("@deleteuser"))){ 
-          deleteUser(buff_rcv+strlen("@deleteuser")+1);
-		  printf("[DBSERVER] User logout : %s\n",buff_rcv+sizeof("@deleteuser"));  // 서버 프린트  (buff_rcv+sizeof("@deleteuser")+1 하면 왜 짤리지?)
+		  strncpy(param, buff_rcv+strlen("@deleteuser")+1, PARAM_SIZE-1);
+		  param[strlen(param)-1] = 0; // eat new line
+          deleteUser(param);
+		  printf("[DBSERVER] User logout : %s\n",buff_rcv+sizeof("@deleteuser"));  
 	  }
 	  
 	  if (!strncmp(buff_rcv,"@userlist",strlen("@userlist"))){
-         snprintf(buff_snd, BUFF_SIZE, "%s", Userlist());  // user can download [buff_snd] buffer as a file. 
+          snprintf(buff_snd, BUFF_SIZE, "%s", Userlist());  
 	  }
 	  write(client_socket, buff_snd, strlen(buff_snd)+1);  
       close(client_socket);
@@ -163,7 +188,7 @@ int run_dbserver(int dbserver_port){
 
 int main(int argc, char *argv[])
 {
-	addUser(argv[1]);
-	//run_dbserver(4000); // 4000번포트사용
+	//deleteUser(argv[1]);
+	run_dbserver(4000); // 4000번포트사용
 }
 

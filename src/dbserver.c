@@ -164,8 +164,7 @@ int run_dbserver(int dbserver_port){
       read(client_socket, buff_rcv, BUFF_SIZE);
       
 	  if (!strncmp(buff_rcv,"@adduser",strlen("@adduser"))){ 
-		  strcpy(param, ipstr);
-		  strncat(param, buff_rcv+strlen("@adduser"), PARAM_SIZE-strlen(ipstr)-1); 
+		  strncpy(param, buff_rcv+strlen("@adduser")+1, PARAM_SIZE-1); 
 		  param[strlen(param)-1] = 0; // eat newline
 		  addUser(param);                 
 		  printf("[DBSERVER] User login : %s\n\n",buff_rcv+strlen("@adduser")+1); 

@@ -18,10 +18,13 @@
 |  3. Injection and others | 2번을 이용하여 시스템 커멘드의 길이정보를 조작한 후에는 command injection이 가능합니다. |
 
 # Assumption
+
 |RELRO | STACK CANARY | NX | PIE | RPATH | RUNPATH | FILE
+|------|--------------|----|-----|-------|---------|-----
 |Partial RELRO  | Canary found | NX enabled | No PIE | No RPATH | No RUNPATH | dbserver
 
 # etc
+
 | Security features | Command injection filter가 적용된 프로그램으로써, default로는 command injection 이 불가능하므로 공격을 위해서는 이를 우회하여야 합니다. |
 
 

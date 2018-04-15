@@ -3,7 +3,7 @@ Command injection filter를 우회하여 임의 커멘드 실행을 가능케 �
 모순적이게도 이는 Command injection filter 내부의 버퍼 관리 취약점 때문에 발생합니다.  
 
 # Assumption
-기본적으로는 아래와 같은 Security feature 이 적용되어 있는 weak assumption model을 따릅니다. 
+기본적으로는 아래와 같은 Security feature 이 적용되어 있는 weak assumption model을 따릅니다.  
 추가적으로, 프로그램 내부에 commend injection filter을 구현하여 적용하였고 따라서 단순 커멘드인젝션 공격은 불가능합니다.  
   
 |RELRO | STACK CANARY | NX | PIE | RPATH | RUNPATH | FILE

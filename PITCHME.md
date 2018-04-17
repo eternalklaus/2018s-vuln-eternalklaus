@@ -1,2 +1,2 @@
 ### Exploitation
-![test](/IMG/1.JPG)
+![test](/IMG2/1.JPG)

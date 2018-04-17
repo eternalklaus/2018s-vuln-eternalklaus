@@ -1,1 +1,25 @@
----?image=https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드1.PNG&size=auto 90%
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드1.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드2.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드3.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드4.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드5.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드6.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드7.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드8.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드9.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드10.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드11.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드12.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드13.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드14.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드15.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드16.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드17.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드18.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드19.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드20.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드21.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드22.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드23.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드24.PNG
+---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation/IMG/슬라이드25.PNG

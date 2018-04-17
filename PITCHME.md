@@ -1,2 +1,2 @@
 ### Exploitation
-![test](/IMG/슬라이드1.PNG)
+![test](/IMG/1.JPG)

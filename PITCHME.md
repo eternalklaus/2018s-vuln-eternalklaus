@@ -1,4 +1,4 @@
----?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드1.PNG
+?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드1.PNG
 ---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드2.PNG
 ---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드3.PNG
 ---?https://github.com/KAIST-IS521/2018s-vuln-eternalklaus/blob/presentation//IMG/슬라이드4.PNG
